@@ -44,7 +44,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+#define LED1_ON() LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_12)
+#define LED1_OFF() LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_12)
+#define LED2_ON() LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_13)
+#define LED2_OFF() LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_13)
+#define LED3_ON() LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_14)
+#define LED3_OFF() LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_14)
+#define LED4_ON() LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_15)
+#define LED4_OFF() LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_15)
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -66,7 +73,9 @@ static void MX_GPIO_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	int myDelay = 50;
+	LED1_OFF();LED2_OFF();
+	LED3_OFF();LED4_OFF();
   /* USER CODE END 1 */
   
 
@@ -103,6 +112,23 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (!(LL_GPIO_ReadInputPort(GPIOA)&GPIO_IDR_IDR1))
+	  {
+		  LED1_ON();
+		  LL_mDelay(myDelay);
+		  LED1_OFF();
+		  LED2_ON();
+		  LL_mDelay(myDelay);
+		  LED2_OFF();
+		  LED3_ON();
+		  LL_mDelay(myDelay);
+		  LED3_OFF();
+		  LED4_ON();
+		  LL_mDelay(myDelay);
+		  LED4_OFF();
+
+	  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -123,15 +149,14 @@ void SystemClock_Config(void)
   Error_Handler();  
   }
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
-  LL_RCC_HSI_SetCalibTrimming(16);
-  LL_RCC_HSI_Enable();
+  LL_RCC_HSE_Enable();
 
-   /* Wait till HSI is ready */
-  while(LL_RCC_HSI_IsReady() != 1)
+   /* Wait till HSE is ready */
+  while(LL_RCC_HSE_IsReady() != 1)
   {
     
   }
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, LL_RCC_PLLM_DIV_8, 100, LL_RCC_PLLP_DIV_2);
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_4, 100, LL_RCC_PLLP_DIV_2);
   LL_RCC_PLL_Enable();
 
    /* Wait till PLL is ready */
@@ -167,13 +192,13 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOH);
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOD);
 
   /**/
-  LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12|LL_GPIO_PIN_13|LL_GPIO_PIN_14|LL_GPIO_PIN_15);
+  LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_12|LL_GPIO_PIN_13|LL_GPIO_PIN_14|LL_GPIO_PIN_15);
 
   /**/
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_1;
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_0;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -181,10 +206,10 @@ static void MX_GPIO_Init(void)
   /**/
   GPIO_InitStruct.Pin = LL_GPIO_PIN_12|LL_GPIO_PIN_13|LL_GPIO_PIN_14|LL_GPIO_PIN_15;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  LL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 }
 
