@@ -42,6 +42,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
@@ -52,6 +53,7 @@ TIM_HandleTypeDef htim3;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -91,8 +93,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM3_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -102,29 +106,32 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  /* 10% duty cycle:     pulse_length = ((1999 + 1) * 10) / 100 - 1 = 199 */
-	  /* 20% duty cycle:     pulse_length = ((1999 + 1) * 20) / 100 - 1 = 399 */
-	  /* 30% duty cycle:     pulse_length = ((1999 + 1) * 30) / 100 - 1 = 599 */
-	  /* 40% duty cycle:     pulse_length = ((1999 + 1) * 40) / 100 - 1 = 799 */
-	  /* 50% duty cycle:     pulse_length = ((1999 + 1) * 50) / 100 - 1 = 999 */
-	  /* 60% duty cycle:     pulse_length = ((1999 + 1) * 60) / 100 - 1 = 1199 */
-	  /* 70% duty cycle:     pulse_length = ((1999 + 1) * 70) / 100 - 1 = 1399 */
-	  /* 80% duty cycle:     pulse_length = ((1999 + 1) * 80) / 100 - 1 = 1599 */
-	  /* 90% duty cycle:     pulse_length = ((1999 + 1) * 90) / 100 - 1 = 1799 */
-	  /* 100% duty cycle:     pulse_length = ((1999 + 1) * 100) / 100 - 1 = 2099 */
+	  // 10% duty cycle:     pulse_length = ((1999 + 1) * 10) / 100 - 1 = 199
+	  // 20% duty cycle:     pulse_length = ((1999 + 1) * 20) / 100 - 1 = 399
+	  // 30% duty cycle:     pulse_length = ((1999 + 1) * 30) / 100 - 1 = 599
+	  // 40% duty cycle:     pulse_length = ((1999 + 1) * 40) / 100 - 1 = 799
+	  // 50% duty cycle:     pulse_length = ((1999 + 1) * 50) / 100 - 1 = 999
+	  // 60% duty cycle:     pulse_length = ((1999 + 1) * 60) / 100 - 1 = 1199
+	  // 70% duty cycle:     pulse_length = ((1999 + 1) * 70) / 100 - 1 = 1399
+	  // 80% duty cycle:     pulse_length = ((1999 + 1) * 80) / 100 - 1 = 1599
+	  // 90% duty cycle:     pulse_length = ((1999 + 1) * 90) / 100 - 1 = 1799
+	  // 100% duty cycle:     pulse_length = ((1999 + 1) * 100) / 100 - 1 = 1999
 
 	  if (HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_0))
 	  {
 		  /*HAL_Delay(50);*/
 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
-		  TIM3->CCR3 = 1999;
+		  TIM3->CCR3 = 3999; // PB0
+		  // TIM1->CCR1 = 1999;  PE9
+		  // __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 65535);
 	  }
 	  else
 	  {
 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
 		  TIM3->CCR3 = 0;
+		  TIM1->CCR1 = 0;
 	  }
 
 
@@ -175,6 +182,71 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 0;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 65535;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+  HAL_TIM_MspPostInit(&htim1);
+
+}
+
+/**
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
@@ -196,7 +268,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1999;
+  htim3.Init.Period = 0;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -218,7 +290,7 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -246,6 +318,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
