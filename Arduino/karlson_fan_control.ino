@@ -37,12 +37,14 @@ void loop() {
     previousMillis = currentMillis;
     Serial.print("pulse duration: ");
     Serial.println(pulseDuration);
+    Serial.print("PWM Duty: ");
+    Serial.println(pwm);
     Serial.print("RPM: ");
     Serial.println(rpm);
     Serial.println(" ");
   }
-  if (buttonStateUp == 0 && pwm < 250) {   
-    delay(40);
+  if (buttonStateUp == 0 && pwm < 250) {
+    fastBlinkLed();
      pwm = pwm + pwmStep;
     analogWrite(fanPwm, pwm);
     Serial.println(pwm);
@@ -52,7 +54,7 @@ void loop() {
     delay(960);
   }
   if (buttonStateDown == 0 && pwm != 0) {
-    delay(40);
+    fastBlinkLed();
     pwm = pwm - pwmStep;
     analogWrite(fanPwm, pwm);
     Serial.println(pwm);
@@ -68,10 +70,16 @@ void loop() {
 }
 
 void warningLed(int rpm) {
-  if (rpm <= 2400) {
+  if (rpm <= 2200) {
     digitalWrite(led, HIGH);
   }
   else {
     digitalWrite(led, LOW);
   }
+}
+
+void fastBlinkLed() {
+  digitalWrite(led, HIGH);
+  delay(40);
+  digitalWrite(led, LOW);
 }
